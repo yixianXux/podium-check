@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Scores a practice talk on delivery and content against what works for a chosen audience, with three concrete fixes.">
+<title>Podium Check</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a rehearsal console. Input rail on the left, a stacked scorecard on the right; one column on phones. */
+:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --ink:#131A2B; --muted:#586177; --line:#DAE0EA;
+  --accent:#2A4FD6; --accent-ink:#FFFFFF; --accent-soft:#E2E8FC; --pitch:#B86A00;
+  --good:#1D7F4C; --warn:#A86A12; --bad:#B93A33;
+  --good-soft:#DFF1E7; --warn-soft:#F9EDD6; --bad-soft:#F9E2E0;
+  --font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1220; --surface:#151C2D; --ink:#E7EBF4; --muted:#9AA3B8; --line:#273049;
+  --accent:#86A2FF; --accent-ink:#0D1220; --accent-soft:#1D2850; --pitch:#F2A93B;
+  --good:#52C68D; --warn:#E5B14D; --bad:#F2766E;
+  --good-soft:#143127; --warn-soft:#33291A; --bad-soft:#3B1F21; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1220; --surface:#151C2D; --ink:#E7EBF4; --muted:#9AA3B8; --line:#273049;
+  --accent:#86A2FF; --accent-ink:#0D1220; --accent-soft:#1D2850; --pitch:#F2A93B;
+  --good:#52C68D; --warn:#E5B14D; --bad:#F2766E;
+  --good-soft:#143127; --warn-soft:#33291A; --bad-soft:#3B1F21; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(28px,4vw,38px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:19px;font-weight:700}
+h3{font-size:15px;font-weight:700}
+.top{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:34px;height:34px;flex:none}
+.lede{color:var(--muted);max-width:64ch;margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.inputs{display:flex;flex-direction:column;gap:10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+@media (max-width:860px){.inputs{position:static}}
+label{font-weight:600;font-size:13px;margin-top:6px}
+.opt{font-weight:400;color:var(--muted)}
+select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+textarea{resize:vertical;min-height:130px;font-size:13.5px}
+select:focus-visible,textarea:focus-visible,button:focus-visible,.drop:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.hint{color:var(--muted);font-size:12.5px;margin:0}
+.drop{position:relative;border:1.5px dashed var(--line);border-radius:8px;padding:16px 12px;text-align:center;background:var(--bg);cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.drop span{font-weight:500}
+.drop small{color:var(--muted);font-size:12px}
+.file-chip{font-family:var(--font-mono);font-size:12px;color:var(--ink);background:var(--accent-soft);border-radius:6px;padding:4px 8px;overflow-wrap:anywhere}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 12px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;padding:11px 14px;margin-top:8px}
+button:disabled{opacity:.55;cursor:default}
+.status{font-size:13px;color:var(--muted);min-height:1.4em;margin:0}
+.status.err{color:var(--bad)}
+details.how{border-top:1px solid var(--line);padding-top:10px;margin-top:4px;font-size:13px}
+details.how summary{cursor:pointer;font-weight:600}
+details.how p,details.how li{color:var(--muted)}
+details.how ul{padding-left:18px;margin:6px 0}
+.tbl-wrap{overflow-x:auto}
+table.targets{border-collapse:collapse;font-size:12px;width:100%;margin-top:6px;font-variant-numeric:tabular-nums}
+table.targets th,table.targets td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;white-space:nowrap}
+table.targets th{color:var(--ink);font-weight:600}
+.results{display:flex;flex-direction:column;gap:18px;min-width:0}
+.banner{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.banner .meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.banner .file{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.chip{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:var(--warn-soft);color:var(--warn)}
+.chip.live{background:var(--good-soft);color:var(--good)}
+.ref-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ref-actions button{font-size:13px;padding:6px 10px}
+.overall{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
+@media (max-width:560px){.overall{grid-template-columns:minmax(0,1fr);justify-items:start}}
+.ring{position:relative;width:132px;height:132px}
+.ring svg{width:132px;height:132px;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .num b{font-family:var(--font-display);font-size:42px;line-height:1;font-variant-numeric:tabular-nums}
+.ring .num small{color:var(--muted);font-size:12px}
+.verdict{font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:4px}
+.groups{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.gbox{border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:112px}
+.gbox .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.gbox .v{font-family:var(--font-mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.gbox .v small{font-size:12px;color:var(--muted)}
+.msg{margin:10px 0 0;font-size:14px}
+.msg em{font-style:normal;font-weight:600}
+.chart-card canvas{width:100%;height:190px;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.section-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.section-head .src{font-size:12px;color:var(--muted)}
+.rows{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) 44px;gap:6px 16px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+@media (max-width:560px){.row{grid-template-columns:minmax(0,1fr) 44px}.row .bar-col{grid-column:1 / -1;grid-row:2}}
+.row .name{font-weight:600;font-size:14px}
+.row .val{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.row .val b{color:var(--ink);font-weight:500}
+.row .tip{grid-column:1 / -1;font-size:13px;color:var(--muted);margin:0}
+.bar{position:relative;height:10px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.bar .ref{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:2px}
+.score-n{font-family:var(--font-mono);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.na{color:var(--muted);font-size:13px}
+.fixes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:8px}
+@media (max-width:900px){.fixes{grid-template-columns:minmax(0,1fr)}}
+.fix{border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.fix .n{font-family:var(--font-mono);font-size:12px;color:var(--accent);font-weight:500}
+.fix p{margin:0;font-size:13.5px}
+.fix .try{background:var(--accent-soft);border-radius:6px;padding:8px 10px;font-size:13px}
+.crit{display:flex;flex-direction:column;gap:2px;padding:12px 0;border-top:1px solid var(--line)}
+.crit:first-child{border-top:0}
+.crit .line1{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) 44px;gap:16px;align-items:center}
+@media (max-width:560px){.crit .line1{grid-template-columns:minmax(0,1fr) 44px}.crit .line1 .bar{grid-column:1 / -1;grid-row:2}}
+.crit p{margin:0;font-size:13.5px}
+.crit q{display:block;color:var(--muted);font-size:13px;font-style:italic;margin-top:2px}
+.strengths{margin:8px 0 0;padding-left:18px;font-size:13.5px}
+.thinking{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;padding:8px 0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+footer{margin-top:28px;color:var(--muted);font-size:12.5px;max-width:80ch}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="8" fill="var(--accent)"/><path d="M7 21v-4M11 24V12M15 20v-6M19 26V9M23 22v-8M27 19v-3" stroke="var(--accent-ink)" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <h1>Podium Check</h1>
+    </div>
+    <p class="lede">Upload a practice recording and pick your audience. You get a score for your delivery and your argument, measured against what works for that audience, plus the three changes that would help most.</p>
+  </header>
+
+  <main class="grid">
+    <section class="panel inputs" aria-labelledby="in-h">
+      <h2 id="in-h">Your talk</h2>
+
+      <label for="audience">Audience</label>
+      <select id="audience"></select>
+      <p class="hint" id="aud-note"></p>
+
+      <label for="audio">Recording</label>
+      <div class="drop" id="drop">
+        <input type="file" id="audio" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.aac,.ogg,.webm,.mp4">
+        <span>Drop an audio file or choose one</span>
+        <small>m4a, mp3, wav or mp4. Analyzed in your browser, never uploaded.</small>
+      </div>
+      <div id="file-name" hidden class="file-chip"></div>
+
+      <label for="transcript">Transcript <span class="opt">(optional, needed for content feedback)</span></label>
+      <textarea id="transcript" placeholder="Paste the transcript of the same recording. Zoom, Otter, Word (Dictate, then Transcribe) and YouTube captions all work; timestamps and speaker names are removed automatically."></textarea>
+
+      <button id="run" class="primary">Score my talk</button>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <details class="how">
+        <summary>How scoring works</summary>
+        <p><b>Delivery</b> comes from the audio: pace (words per minute), pauses of 0.3&nbsp;s or more, vocal variety (how widely your pitch moves, in semitones), volume control, and filler words per minute.</p>
+        <p><b>Language</b> comes from the transcript: average sentence length and hedges such as "I think" or "sort of".</p>
+        <p><b>Content</b> is scored by Claude against a five-part rubric: structure, clarity of the main message, evidence and reasoning, fit with the audience, and the opening and close.</p>
+        <p>Each measure is scored 0–100 against the target range for the audience you choose. The overall score weights the three groups by what that audience cares about.</p>
+        <div class="tbl-wrap"><table class="targets" id="targets"></table></div>
+        <p>The ranges follow common speech-coaching guidance (for example, about 130–160 words per minute for a presentation). To compare against a specific talk you admire, score it here and save it as your reference talk.</p>
+        <p>Automatic transcripts often drop "um" and "uh", so filler counts may run low.</p>
+      </details>
+    </section>
+
+    <section class="results" id="results" aria-live="polite"></section>
+  </main>
+
+  <footer>Your recording stays in your browser. When you ask for content feedback, only the transcript and the delivery numbers go to Claude, on your own Claude account. Scores are a rehearsal aid, not a verdict on you as a speaker.</footer>
+</div>
+
+<script>
+/*CORE-START*/
+const Core = (() => {
+  const clamp = (v, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, v));
+  function pct(arr, p) {
+    const n = arr.length; if (!n) return NaN;
+    const a = Float64Array.from(arr).sort();
+    const i = (n - 1) * p, lo = Math.floor(i), hi = Math.ceil(i);
+    return a[lo] + (a[hi] - a[lo]) * (i - lo);
+  }
+  const median = (arr) => pct(arr, 0.5);
+
+  // Flip runs of `val` shorter than `minLen` frames (only runs bounded on both sides).
+  function dropShortRuns(mask, val, minLen) {
+    let i = 0; const n = mask.length;
+    while (i < n) {
+      if (mask[i] !== val) { i++; continue; }
+      let j = i; while (j < n && mask[j] === val) j++;
+      if (j - i < minLen && i > 0 && j < n) for (let k = i; k < j; k++) mask[k] = 1 - val;
+      i = j;
+    }
+  }
+
+  const AUDIENCES = {
+    academic: {
+      label: 'Academic talk', note: 'Conference talk, job talk or seminar.',
+      brief: 'An academic audience at a conference, seminar or job talk. They reward a clear research question, an explicit contribution, credible evidence and honest limitations. Field jargon is acceptable if key terms are defined.',
+      pace: [130, 160, 95, 200], pauses: [6, 18, 1.5, 32], pitch: [1.3, 3.0], volume: [3, 10, 0.5, 18],
+      fillers: [1.5, 6], sentence: [10, 22, 4, 36], hedges: [1.5, 5],
+      groups: { delivery: 0.4, language: 0.15, content: 0.45 }
+    },
+    pitch: {
+      label: 'Investor pitch', note: 'Startup pitch, demo day or funding meeting.',
+      brief: 'Investors hearing a startup pitch. They reward a crisp problem, why now, evidence of traction, market size, a clear business model and a specific ask. Energy and confidence matter.',
+      pace: [145, 175, 110, 210], pauses: [6, 16, 1.5, 28], pitch: [1.5, 3.5], volume: [3, 10, 0.5, 18],
+      fillers: [1, 5], sentence: [8, 18, 4, 30], hedges: [1, 4],
+      groups: { delivery: 0.45, language: 0.15, content: 0.4 }
+    },
+    policy: {
+      label: 'Policy briefing', note: 'Briefing officials, a committee or a board.',
+      brief: 'Policymakers or senior officials being briefed. They reward the bottom line up front, concrete recommendations, costs and tradeoffs, and plain language without academic jargon.',
+      pace: [130, 160, 95, 195], pauses: [6, 18, 1.5, 32], pitch: [1.3, 2.8], volume: [3, 10, 0.5, 18],
+      fillers: [1.5, 6], sentence: [10, 20, 4, 32], hedges: [1.5, 5],
+      groups: { delivery: 0.35, language: 0.2, content: 0.45 }
+    },
+    general: {
+      label: 'General audience', note: 'Public talk, TED-style talk or keynote.',
+      brief: 'A general public audience at a public talk or keynote. They reward a strong hook, one big idea, vivid stories and examples, no jargon, and a memorable close.',
+      pace: [140, 170, 100, 205], pauses: [7, 18, 1.5, 32], pitch: [1.5, 3.5], volume: [3, 11, 0.5, 19],
+      fillers: [1, 5], sentence: [8, 18, 4, 30], hedges: [1.5, 5],
+      groups: { delivery: 0.45, language: 0.15, content: 0.4 }
+    }
+  };
+
+  function analyzeAudio(samples, sr) {
+    const hop = Math.max(1, Math.round(sr * 0.01));
+    const win = Math.round(sr * 0.03);
+    const frameSec = hop / sr;
+    const n = Math.max(0, Math.floor((samples.length - win) / hop));
+    if (n < 1500) throw new Error('This recording is too short to score. Use at least 15 seconds of speech.');
+    const db = new Float32Array(n);
+    for (let f = 0; f < n; f++) {
+      let s = 0; const o = f * hop;
+      for (let i = 0; i < win; i++) { const v = samples[o + i]; s += v * v; }
+      db[f] = 10 * Math.log10(s / win + 1e-10);
+    }
+    const floor = pct(db, 0.10), peak = pct(db, 0.97);
+    if (peak - floor < 10) throw new Error('No clear speech found in this file. Check that the voice is audible and background noise is low.');
+    const thr = floor + Math.max(8, 0.3 * (peak - floor));
+    const sp = new Uint8Array(n);
+    for (let f = 0; f < n; f++) sp[f] = db[f] > thr ? 1 : 0;
+    dropShortRuns(sp, 1, 5);   // clicks and breaths under 50 ms
+    dropShortRuns(sp, 0, 10);  // stop-consonant gaps under 100 ms
+    const first = sp.indexOf(1), last = sp.lastIndexOf(1);
+    if (first < 0 || last - first < 500) throw new Error('Less than 5 seconds of speech found in this file.');
+    const spanFrames = last - first + 1, spanSec = spanFrames * frameSec;
+
+    let speechFrames = 0, run = 0, rs = 0; const pauses = [];
+    for (let f = first; f <= last; f++) {
+      if (sp[f]) {
+        speechFrames++;
+        if (run) { const d = run * frameSec; if (d >= 0.3) pauses.push({ t: (rs - first) * frameSec, d }); run = 0; }
+      } else { if (!run) rs = f; run++; }
+    }
+
+    // Pitch: normalized autocorrelation every 20 ms on speech frames, 70-400 Hz.
+    const minLag = Math.max(2, Math.floor(sr / 400)), maxLag = Math.ceil(sr / 70), W = Math.round(sr * 0.03);
+    const r = new Float32Array(maxLag + 2);
+    const f0 = new Float32Array(n);
+    for (let f = first; f <= last; f += 2) {
+      if (!sp[f]) continue;
+      const o = f * hop; if (o + W + maxLag + 2 >= samples.length) break;
+      let mean = 0; for (let i = 0; i < W + maxLag; i++) mean += samples[o + i]; mean /= (W + maxLag);
+      let e0 = 0; for (let i = 0; i < W; i++) { const v = samples[o + i] - mean; e0 += v * v; }
+      if (e0 < 1e-9) continue;
+      let best = -2, bl = 0;
+      for (let lag = minLag - 1; lag <= maxLag + 1; lag++) {
+        let c = 0, e1 = 0;
+        for (let i = 0; i < W; i++) { const a = samples[o + i] - mean, b = samples[o + i + lag] - mean; c += a * b; e1 += b * b; }
+        const v = c / Math.sqrt(e0 * e1 + 1e-12); r[lag] = v;
+        if (lag >= minLag && lag <= maxLag && v > best) { best = v; bl = lag; }
+      }
+      if (best < 0.6) continue;
+      for (let lag = minLag; lag < bl; lag++) { // prefer the shortest strong period (avoids octave-down errors)
+        if (r[lag] >= 0.88 * best && r[lag] >= r[lag - 1] && r[lag] >= r[lag + 1]) { bl = lag; break; }
+      }
+      const a = r[bl - 1], b = r[bl], c = r[bl + 1], den = a - 2 * b + c;
+      const shift = den < 0 ? clamp(0.5 * (a - c) / den, -0.5, 0.5) : 0;
+      f0[f] = sr / (bl + shift);
+    }
+    const fl = []; for (let f = first; f <= last; f++) if (f0[f] > 0) fl.push(f0[f]);
+    let pitchMedian = NaN, pitchSpreadSt = NaN, pitchRangeSt = NaN;
+    if (fl.length >= 40) {
+      pitchMedian = median(fl);
+      const st = fl.map(x => 12 * Math.log2(x / pitchMedian)).filter(s => Math.abs(s) <= 12);
+      pitchSpreadSt = (pct(st, 0.9) - pct(st, 0.1)) / 2.563;
+      pitchRangeSt = pct(st, 0.95) - pct(st, 0.05);
+    }
+
+    // Volume: spread of per-second loudness while speaking.
+    const fps = Math.round(1 / frameSec), perSec = [];
+    for (let s = first; s <= last; s += fps) {
+      let sum = 0, c = 0;
+      for (let f = s; f < Math.min(s + fps, last + 1); f++) if (sp[f]) { sum += db[f]; c++; }
+      if (c >= fps * 0.3) perSec.push(sum / c);
+    }
+    const loudSpreadDb = perSec.length >= 5 ? pct(perSec, 0.9) - pct(perSec, 0.1) : NaN;
+
+    // Speech rate from syllable nuclei: voiced loudness peaks with a dip between them.
+    const sm = new Float32Array(n);
+    for (let f = 2; f < n - 2; f++) sm[f] = (db[f - 2] + db[f - 1] + db[f] + db[f + 1] + db[f + 2]) / 5;
+    let syll = 0, minSince = Infinity;
+    for (let f = Math.max(first, 6); f <= Math.min(last, n - 7); f++) {
+      const v = sm[f]; if (v < minSince) minSince = v;
+      if (!sp[f] || v < thr + 2) continue;
+      let isMax = true; for (let k = -5; k <= 5; k++) { if (k && sm[f + k] > v) { isMax = false; break; } }
+      if (!isMax) continue;
+      let voiced = false; for (let k = -6; k <= 6; k++) { if (f0[f + k] > 0) { voiced = true; break; } }
+      if (!voiced) continue;
+      if (v - minSince >= 2) { syll++; minSince = v; }
+    }
+    const wpmEst = syll ? (syll / spanSec) * 60 / 1.2 : NaN;
+
+    // Chart series, ~600 buckets across the speaking span.
+    const B = 600, env = [], pit = [];
+    for (let b = 0; b < B; b++) {
+      const s = first + Math.floor(b * spanFrames / B), e = Math.max(s + 1, first + Math.floor((b + 1) * spanFrames / B));
+      let mx = -Infinity; const ps = [];
+      for (let f = s; f < e && f < n; f++) { if (db[f] > mx) mx = db[f]; if (f0[f] > 0) ps.push(f0[f]); }
+      env.push(clamp((mx - floor) / (peak - floor), 0, 1));
+      pit.push(ps.length && pitchMedian ? 12 * Math.log2(median(ps) / pitchMedian) : null);
+    }
+
+    return {
+      totalSec: samples.length / sr, spanSec, speechRatio: speechFrames / spanFrames,
+      pauses, pausesPerMin: pauses.length / (spanSec / 60), longPauses: pauses.filter(p => p.d >= 2.5).length,
+      pitchMedian, pitchSpreadSt, pitchRangeSt, loudSpreadDb, syllables: syll, wpmEst,
+      chart: { env, pitch: pit, pauses, spanSec }
+    };
+  }
+
+  const WORD_RE = /[A-Za-zÀ-ɏ]+(?:['’][A-Za-z]+)?|\d+(?:[.,]\d+)?/g;
+  const STRONG = /\b(u+m+|u+h+|uhm|erm|er|a+h+|hmm+|mm+)\b/g;
+  const SOFT = /\b(you know|i mean|kind of|sort of|basically|literally|actually)\b/g;
+  const HEDGE = /\b(i think|i guess|i feel like|maybe|perhaps|probably|sort of|kind of|i'm not sure|somewhat|a little bit)\b/g;
+
+  function cleanTranscript(raw) {
+    return String(raw || '').split(/\r?\n/)
+      .filter(l => !/^\s*(WEBVTT|NOTE\b|Kind:|Language:)/.test(l) && !/^\s*\d+\s*$/.test(l) && !/-->/.test(l))
+      .map(l => l
+        .replace(/^\s*\[?\(?\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?\)?\]?\s*/, '')
+        .replace(/^\s*(?:Speaker\s*\d+|(?:[A-Z][\w'.-]*\s?){1,4})\s*(?:\d{1,2}:\d{2}(?::\d{2})?)?\s*:\s+/, '')
+        .replace(/\s+\d{1,2}:\d{2}(?::\d{2})?\s*$/, ''))
+      .join(' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function analyzeText(raw, spanSec) {
+    const text = cleanTranscript(raw);
+    const words = text.match(WORD_RE) || [];
+    const wc = words.length;
+    if (wc < 40) return { text, wordCount: wc, tooShort: true };
+    const lower = text.toLowerCase();
+    const strong = lower.match(STRONG) || [], soft = lower.match(SOFT) || [], hedges = lower.match(HEDGE) || [];
+    const minutes = spanSec ? spanSec / 60 : wc / 150;
+    const tally = {}; for (const w of strong.concat(soft)) tally[w] = (tally[w] || 0) + 1;
+    const fillerTop = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const marks = (text.match(/[.!?]+(?=\s|$)/g) || []).length;
+    let avgSentence = null, longShare = null;
+    if (marks >= wc / 45) {
+      const sents = text.split(/[.!?]+(?:\s+|$)/).map(s => (s.match(WORD_RE) || []).length).filter(c => c >= 3);
+      if (sents.length >= 3) {
+        avgSentence = sents.reduce((a, b) => a + b, 0) / sents.length;
+        longShare = sents.filter(c => c > 30).length / sents.length;
+      }
+    }
+    return {
+      text, wordCount: wc, wpm: spanSec ? wc / minutes : null, minutesEstimated: !spanSec,
+      fillerStrong: strong.length, fillerSoft: soft.length,
+      fillersPerMin: (strong.length + 0.5 * soft.length) / minutes, fillerTop,
+      hedgesPer100: hedges.length / wc * 100, avgSentence, longShare, punctuated: marks >= wc / 45
+    };
+  }
+
+  const band = (v, lo, hi, zLo, zHi) => v >= lo && v <= hi ? 100 : v < lo ? clamp(100 * (v - zLo) / (lo - zLo)) : clamp(100 * (zHi - v) / (zHi - hi));
+  const rise = (v, zero, full) => clamp(100 * (v - zero) / (full - zero));
+  const fall = (v, full, zero) => clamp(100 * (zero - v) / (zero - full));
+  const ok = (v) => v !== null && v !== undefined && Number.isFinite(v);
+  const r0 = (v) => Math.round(v), r1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
+
+  // Each measure: how to read it, score it, and what to do about it.
+  function measures(A, tm, aud) {
+    const a = AUDIENCES[aud];
+    const paceVal = tm && ok(tm.wpm) ? tm.wpm : (A && ok(A.wpmEst) ? A.wpmEst : null);
+    const paceEst = !(tm && ok(tm.wpm)) && ok(paceVal);
+    const list = [
+      {
+        key: 'pace', group: 'delivery', label: 'Speaking pace', w: 0.25, v: paceVal, est: paceEst,
+        show: v => `${r0(v)} wpm${paceEst ? ' (est.)' : ''}`, target: `${a.pace[0]}–${a.pace[1]} wpm`,
+        score: v => band(v, ...a.pace),
+        fix: v => v < a.pace[0]
+          ? { title: 'Pick up the pace', why: `At ${r0(v)} words per minute you are below the ${a.pace[0]}–${a.pace[1]} range this audience expects, which can read as low energy.`, try: 'Cut repeated phrases and save pauses for the ends of ideas, not the middle of sentences.' }
+          : v > a.pace[1]
+            ? { title: 'Slow down on key points', why: `At ${r0(v)} words per minute you are above ${a.pace[1]}, so numbers and conclusions blur together.`, try: 'Mark your three most important sentences and say them at half speed, with a full pause after each.' }
+            : { ok: 'Comfortable pace for this audience.' }
+      },
+      {
+        key: 'pauses', group: 'delivery', label: 'Pauses', w: 0.2, v: A ? A.pausesPerMin : null,
+        show: v => `${r1(v)} per min${A && A.longPauses ? `, ${A.longPauses} over 2.5 s` : ''}`, target: `${a.pauses[0]}–${a.pauses[1]} per min`,
+        score: v => clamp(band(v, ...a.pauses) - (A ? Math.min(30, A.longPauses * 6) : 0)),
+        fix: v => v < a.pauses[0]
+          ? { title: 'Let your points land', why: `You pause only ${r1(v)} times a minute, so main points run into each other.`, try: 'Pause for a full second after each claim and before each new section.' }
+          : v > a.pauses[1] || (A && A.longPauses > 1)
+            ? { title: 'Join up your phrases', why: A && A.longPauses > 1 ? `There are ${A.longPauses} silences longer than 2.5 seconds, which sound like lost places.` : 'Frequent stops break sentences apart and suggest you are searching for words.', try: 'Rehearse each section aloud three times until each sentence comes out as one phrase.' }
+            : { ok: 'Pauses break the talk into clear phrases.' }
+      },
+      {
+        key: 'pitch', group: 'delivery', label: 'Vocal variety', w: 0.25, v: A ? A.pitchSpreadSt : null,
+        show: v => `${r1(v)} semitones`, target: `${a.pitch[1]}+ semitones`,
+        score: v => rise(v, ...a.pitch),
+        fix: v => v < a.pitch[1]
+          ? { title: 'Vary your pitch', why: `Your pitch moves across about ${r1(v)} semitones; below ${a.pitch[1]} it starts to sound flat.`, try: 'Underline the one word in each sentence that carries the meaning and lift your voice on it.' }
+          : { ok: 'Your pitch moves enough to keep listeners with you.' }
+      },
+      {
+        key: 'volume', group: 'delivery', label: 'Volume control', w: 0.1, v: A ? A.loudSpreadDb : null,
+        show: v => `${r1(v)} dB swing`, target: `${a.volume[0]}–${a.volume[1]} dB`,
+        score: v => band(v, ...a.volume),
+        fix: v => v < a.volume[0]
+          ? { title: 'Use volume for emphasis', why: 'Your loudness hardly changes across the talk.', try: 'Get noticeably louder for your main claim and quieter for asides.' }
+          : v > a.volume[1]
+            ? { title: 'Keep your volume steady', why: 'Loudness swings a lot from second to second, which often means trailing off or turning away from the mic.', try: 'Keep your voice up through the last word of every sentence.' }
+            : { ok: 'Steady volume with some emphasis.' }
+      },
+      {
+        key: 'fillers', group: 'delivery', label: 'Filler words', w: 0.2, v: tm && !tm.tooShort ? tm.fillersPerMin : null, est: tm && tm.minutesEstimated,
+        show: v => `${r1(v)} per min${tm && tm.fillerTop && tm.fillerTop.length ? ' · ' + tm.fillerTop.map(([w, c]) => `“${w}” ${c}`).join(', ') : ''}`, target: `≤ ${a.fillers[0]} per min`,
+        score: v => fall(v, ...a.fillers),
+        fix: v => v > a.fillers[0]
+          ? { title: 'Swap fillers for silence', why: `${r1(v)} filler words a minute make you sound less sure of your material.`, try: 'Record one minute; each time you hear “um”, restart the sentence after a silent pause.' }
+          : { ok: 'Few filler words.' }
+      },
+      {
+        key: 'sentence', group: 'language', label: 'Sentence length', w: 0.5, v: tm && !tm.tooShort ? tm.avgSentence : null,
+        show: v => `${r0(v)} words avg${tm && ok(tm.longShare) ? `, ${r0(tm.longShare * 100)}% over 30` : ''}`, target: `${a.sentence[0]}–${a.sentence[1]} words`,
+        score: v => band(v, ...a.sentence),
+        fix: v => v > a.sentence[1]
+          ? { title: 'Shorten your sentences', why: `Your sentences average ${r0(v)} words, and listeners cannot reread a spoken sentence.`, try: 'Split any sentence that has more than one “and”, “which” or “because”.' }
+          : v < a.sentence[0]
+            ? { title: 'Connect your ideas', why: 'Very short sentences sound choppy and hide the logic between points.', try: 'Join related points with “because” or “so” to show how they connect.' }
+            : { ok: 'Sentences are a comfortable length to follow by ear.' }
+      },
+      {
+        key: 'hedges', group: 'language', label: 'Confident phrasing', w: 0.5, v: tm && !tm.tooShort ? tm.hedgesPer100 : null,
+        show: v => `${r1(v)} hedges per 100 words`, target: `≤ ${a.hedges[0]} per 100`,
+        score: v => fall(v, ...a.hedges),
+        fix: v => v > a.hedges[0]
+          ? { title: 'Cut the hedges', why: `${r1(v)} hedges per 100 words (“I think”, “maybe”, “sort of”) weaken your claims.`, try: 'Keep a hedge only where the uncertainty is real, and then say what the uncertainty is.' }
+          : { ok: 'You state claims directly.' }
+      }
+    ];
+    for (const m of list) {
+      m.available = ok(m.v);
+      if (m.available) {
+        m.s = Math.round(m.score(m.v)); m.display = m.show(m.v); m.advice = m.fix(m.v);
+        if (m.s >= 90 && !m.advice.ok) m.advice = { ok: 'Within the target range for this audience.' };
+      }
+    }
+    return list;
+  }
+
+  const CRITERIA = [
+    ['structure', 'Structure'], ['clarity', 'Clarity of message'], ['reasoning', 'Evidence and reasoning'],
+    ['audience_fit', 'Audience fit'], ['opening_close', 'Opening and close']
+  ];
+
+  function groupScores(list, content, aud) {
+    const a = AUDIENCES[aud], out = {};
+    for (const g of ['delivery', 'language']) {
+      const ms = list.filter(m => m.group === g && m.available);
+      const wsum = ms.reduce((s, m) => s + m.w, 0);
+      out[g] = wsum ? Math.round(ms.reduce((s, m) => s + m.w * m.s, 0) / wsum) : null;
+    }
+    if (content && content.criteria) {
+      const vals = CRITERIA.map(([k]) => content.criteria[k] && Number(content.criteria[k].score)).filter(ok);
+      out.content = vals.length ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length) : null;
+    } else out.content = null;
+    let ws = 0, tot = 0;
+    for (const g of ['delivery', 'language', 'content']) if (ok(out[g])) { ws += a.groups[g]; tot += a.groups[g] * out[g]; }
+    out.overall = ws ? Math.round(tot / ws) : null;
+    return out;
+  }
+
+  return { AUDIENCES, CRITERIA, analyzeAudio, analyzeText, cleanTranscript, measures, groupScores, pct, clamp };
+})();
+/*CORE-END*/
+
+(() => {
+  const { AUDIENCES, CRITERIA } = Core;
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    if (attrs) for (const [k, v] of Object.entries(attrs)) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else n.setAttribute(k, v);
+    }
+    for (const k of kids.flat()) if (k !== null && k !== undefined && k !== false) n.append(k.nodeType ? k : String(k));
+    return n;
+  };
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { } },
+    del(k) { try { localStorage.removeItem(k); } catch { } }
+  };
+  const REF_KEY = 'podium-check.reference';
+  const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const tone = (s) => s >= 75 ? 'good' : s >= 55 ? 'warn' : 'bad';
+  const verdict = (s) => s >= 85 ? 'Ready to present' : s >= 70 ? 'Strong' : s >= 55 ? 'Developing' : 'Needs work';
+
+  // ---------- Inputs ----------
+  const audSel = $('audience');
+  for (const [k, a] of Object.entries(AUDIENCES)) audSel.append(el('option', { value: k }, a.label));
+  audSel.value = store.get('podium-check.audience') || 'academic';
+  const showAudNote = () => { $('aud-note').textContent = AUDIENCES[audSel.value].note; };
+  showAudNote();
+
+  const tbl = $('targets');
+  tbl.append(el('tr', null, el('th', null, 'Audience'), el('th', null, 'Pace'), el('th', null, 'Fillers'), el('th', null, 'Pitch')));
+  for (const a of Object.values(AUDIENCES)) tbl.append(el('tr', null, el('td', null, a.label), el('td', null, `${a.pace[0]}–${a.pace[1]} wpm`), el('td', null, `≤ ${a.fillers[0]}/min`), el('td', null, `${a.pitch[1]}+ st`)));
+
+  let file = null;
+  const drop = $('drop'), fileIn = $('audio');
+  const setFile = (f) => {
+    file = f || null;
+    $('file-name').hidden = !file;
+    $('file-name').textContent = file ? `${file.name} · ${(file.size / 1048576).toFixed(1)} MB` : '';
+  };
+  fileIn.addEventListener('change', () => setFile(fileIn.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) setFile(f); });
+
+  // ---------- State ----------
+  let current = null;   // { label, aud, audio, text, content, contentState, example }
+  let ctl = null;
+  let samplePromise = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('sample').catch(() => null) : Promise.resolve(null);
+
+  audSel.addEventListener('change', () => {
+    store.set('podium-check.audience', audSel.value); showAudNote();
+    if (current && !current.example) { current.aud = audSel.value; render(); }
+  });
+
+  const status = (msg, err) => { const s = $('status'); s.textContent = msg || ''; s.classList.toggle('err', !!err); };
+  const nextFrame = () => new Promise(r => setTimeout(r, 30));
+
+  async function decode(f) {
+    const buf = await f.arrayBuffer();
+    const tmp = new OfflineAudioContext(1, 1, 44100);
+    const audio = await tmp.decodeAudioData(buf);
+    const SR = 8000;
+    const off = new OfflineAudioContext(1, Math.max(1, Math.ceil(audio.duration * SR)), SR);
+    const src = off.createBufferSource(); src.buffer = audio; src.connect(off.destination); src.start();
+    const out = await off.startRendering();
+    return { samples: out.getChannelData(0), sr: SR };
+  }
+
+  $('run').addEventListener('click', async () => {
+    const raw = $('transcript').value.trim();
+    if (!file && !raw) { status('Add a recording, a transcript, or both.', true); return; }
+    if (ctl) ctl.abort();
+    $('run').disabled = true;
+    try {
+      let audio = null;
+      if (file) {
+        status('Reading the recording…'); await nextFrame();
+        let dec;
+        try { dec = await decode(file); }
+        catch { throw new Error('This file could not be read as audio. Try exporting it as .m4a, .mp3 or .wav.'); }
+        status('Measuring pace, pauses and pitch…'); await nextFrame();
+        audio = Core.analyzeAudio(dec.samples, dec.sr);
+      }
+      const text = raw ? Core.analyzeText(raw, audio ? audio.spanSec : null) : null;
+      if (text && text.tooShort && !audio) throw new Error('The transcript is too short to score. Paste at least a minute of speech.');
+      current = { label: file ? file.name : 'Transcript only', aud: audSel.value, audio, text, content: null, contentState: null, example: false };
+      render();
+      status(audio ? `Scored ${fmtTime(audio.spanSec)} of speech.` : 'Scored from the transcript only. Add the recording for delivery scores.');
+      if (text && !text.tooShort) askClaude(current);
+    } catch (e) {
+      status(e && e.message ? e.message : 'Something went wrong while scoring.', true);
+    } finally { $('run').disabled = false; }
+  });
+
+  // ---------- Claude content scoring ----------
+  function deliverySummary(rec) {
+    const ms = Core.measures(rec.audio, rec.text, rec.aud).filter(m => m.available);
+    return ms.map(m => `${m.label}: ${m.display} (target ${m.target}, score ${m.s}/100)`).join('; ') || 'not available';
+  }
+
+  function buildPrompt(rec, forPerson) {
+    const a = AUDIENCES[rec.aud];
+    const format = forPerson
+      ? `Reply with: (1) the talk's main message in one sentence; (2) a table with each criterion, its score and a one-sentence comment with a short exact quote as evidence; (3) two strengths; (4) the three changes that would help most, ordered by impact, each with a concrete rewrite or exercise. Draw on both the content and the delivery measurements.`
+      : `Reply with only JSON in this shape:
+{"main_message":"the talk's central message in one sentence, or Unclear","criteria":{"structure":{"score":0,"comment":"one or two sentences","evidence":"exact quote"},"clarity":{...},"reasoning":{...},"audience_fit":{...},"opening_close":{...}},"strengths":["short phrase","short phrase"],"top_fixes":[{"title":"imperative, under 8 words","why":"one sentence","try":"a concrete rewrite or exercise, such as a rewritten opening line"}]}
+Give exactly 3 top_fixes ordered by impact, drawing on both the content and the delivery measurements.`;
+    return `You are an experienced presentation coach scoring a practice talk. Audience: ${a.label}. ${a.brief}
+
+Score the TRANSCRIPT below on five criteria, each 0-100, with these anchors: 90-100 as strong as the best talks of this kind; 75-89 strong with minor issues; 60-74 solid but with clear gaps; 40-59 noticeable problems that weaken the talk; below 40 the element is largely missing.
+
+Criteria:
+- structure: clear opening, an obvious sequence or roadmap, signposts between parts, a conclusion that ties back.
+- clarity: the main message is stated early and can be put in one sentence; listeners always know why the current point matters.
+- reasoning: claims are backed with evidence, examples or data; the logic is easy to follow; limits are acknowledged where relevant.
+- audience_fit: vocabulary, jargon, examples and framing suit this audience.
+- opening_close: the first 30 seconds earn attention; the ending is memorable and says what to remember or do.
+
+Delivery measurements from the audio, for context in your fixes (do not rescore them): ${deliverySummary(rec)}
+
+The transcript may come from automatic speech recognition: ignore transcription errors, missing punctuation and dropped filler words. Evidence must be an exact quote from the transcript, at most 20 words.
+
+${format}
+
+TRANSCRIPT:
+"""
+${rec.text.text.slice(0, 60000)}
+"""`;
+  }
+
+  async function askClaude(rec) {
+    const sample = await samplePromise;
+    if (!sample) { rec.contentState = 'unavailable'; render(); return; }
+    rec.contentState = 'thinking'; render();
+    const prompt = buildPrompt(rec, false);
+    ctl = new AbortController();
+    try {
+      const res = await sample.json(prompt, { signal: ctl.signal });
+      if (rec !== current) return;
+      if (!res || typeof res !== 'object' || !res.criteria) throw { code: 'invalid_json' };
+      for (const [k] of CRITERIA) {
+        const c = res.criteria[k];
+        if (c) c.score = Core.clamp(Math.round(Number(c.score) || 0));
+      }
+      rec.content = res; rec.contentState = 'done';
+    } catch (e) {
+      if (rec !== current) return;
+      const code = e && e.code;
+      if (code === 'cancelled') return;
+      rec.contentState = (code === 'not_granted' || code === 'sampling_disabled' || code === 'capability_disabled' || code === 'not_declared' || code === 'capability_removed') ? 'unavailable'
+        : code === 'rate_limited' ? 'rate' : 'failed';
+    }
+    render();
+  }
+
+  // ---------- Reference talk ----------
+  function saveReference() {
+    if (!current) return;
+    const ms = Core.measures(current.audio, current.text, current.aud);
+    const g = Core.groupScores(ms, current.content, current.aud);
+    const ref = { label: current.label, aud: current.aud, groups: g, m: {}, c: {} };
+    for (const m of ms) if (m.available) ref.m[m.key] = { s: m.s, display: m.display };
+    if (current.content) for (const [k] of CRITERIA) if (current.content.criteria[k]) ref.c[k] = current.content.criteria[k].score;
+    store.set(REF_KEY, ref); render();
+    status(`Saved “${current.label}” as your reference talk.`);
+  }
+  function clearReference() { store.del(REF_KEY); render(); status('Reference talk cleared.'); }
+
+  // ---------- Rendering ----------
+  function scoreBar(s, refS) {
+    const t = tone(s);
+    return el('div', { class: 'bar', role: 'img', 'aria-label': `Score ${s} of 100${refS != null ? `, reference ${refS}` : ''}` },
+      el('div', { class: 'fill', style: `width:${s}%;background:var(--${t})` }),
+      refS != null ? el('div', { class: 'ref', style: `left:calc(${refS}% - 1px)`, title: `Reference talk: ${refS}` }) : null);
+  }
+
+  function ring(score) {
+    const C = 2 * Math.PI * 56, t = tone(score);
+    const svg = `<svg viewBox="0 0 132 132" aria-hidden="true"><circle cx="66" cy="66" r="56" fill="none" stroke="var(--line)" stroke-width="12"/><circle cx="66" cy="66" r="56" fill="none" stroke="var(--${t})" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C * score / 100} ${C}"/></svg>`;
+    const d = el('div', { class: 'ring' }); d.innerHTML = svg;
+    d.append(el('div', { class: 'num' }, el('b', null, String(score)), el('small', null, 'out of 100')));
+    return d;
+  }
+
+  function render() {
+    const root = $('results'); root.replaceChildren();
+    if (!current) return;
+    const rec = current, a = AUDIENCES[rec.aud];
+    const ref = store.get(REF_KEY);
+    const useRef = ref && !rec.example && ref.label !== rec.label ? ref : null;
+    const ms = Core.measures(rec.audio, rec.text, rec.aud);
+    const g = Core.groupScores(ms, rec.content, rec.aud);
+
+    // Banner
+    const banner = el('div', { class: 'banner' },
+      el('div', { class: 'meta' },
+        el('div', null, rec.example ? el('span', { class: 'chip' }, 'Example report') : el('span', { class: 'chip live' }, 'Your talk')),
+        el('div', { class: 'file' }, `${rec.label} · ${a.label}${rec.audio ? ` · ${fmtTime(rec.audio.spanSec)} of speech` : ''}`)),
+      rec.example ? null : el('div', { class: 'ref-actions' },
+        el('button', { id: 'save-ref', type: 'button' }, 'Save as reference talk'),
+        ref ? el('button', { id: 'clear-ref', type: 'button' }, 'Clear reference') : null));
+    root.append(banner);
+    if (!rec.example) {
+      $('save-ref').addEventListener('click', saveReference);
+      if (ref) $('clear-ref').addEventListener('click', clearReference);
+    }
+
+    // Overall
+    const ov = el('div', { class: 'panel overall' });
+    if (g.overall != null) ov.append(ring(g.overall)); else ov.append(el('div', { class: 'na' }, 'Not enough to score yet.'));
+    const groupsBox = el('div', { class: 'groups' });
+    for (const [k, lbl] of [['delivery', 'Delivery'], ['language', 'Language'], ['content', 'Content']]) {
+      const v = g[k];
+      groupsBox.append(el('div', { class: 'gbox' }, el('div', { class: 'k' }, `${lbl} · ${Math.round(a.groups[k] * 100)}%`),
+        el('div', { class: 'v' }, v != null ? String(v) : '—', v != null ? el('small', null, ' /100') : null,
+          useRef && useRef.groups && useRef.groups[k] != null ? el('small', null, `  ref ${useRef.groups[k]}`) : null)));
+    }
+    const right = el('div', null,
+      el('div', { class: 'verdict' }, g.overall != null ? verdict(g.overall) : 'Waiting for input'),
+      el('p', { class: 'hint' }, `Weighted for ${a.label.toLowerCase()}: what this audience rewards most counts most.${useRef ? ` Black ticks mark your reference talk, “${useRef.label}”${useRef.groups.overall != null ? ` (overall ${useRef.groups.overall})` : ''}.` : ''}`),
+      groupsBox);
+    if (rec.content && rec.content.main_message) right.append(el('p', { class: 'msg' }, el('em', null, 'Main message as heard: '), String(rec.content.main_message)));
+    ov.append(right);
+    root.append(ov);
+
+    // Top fixes
+    root.append(fixesCard(rec, ms));
+
+    // Voice map
+    if (rec.audio && rec.audio.chart) {
+      const card = el('div', { class: 'panel chart-card' },
+        el('div', { class: 'section-head' }, el('h2', null, 'Voice map'), el('span', { class: 'src' }, 'Loudness, pauses and pitch across the talk')),
+        el('canvas', { id: 'voice', role: 'img', 'aria-label': 'Chart of loudness and pitch over time, with pauses shaded' }),
+        el('div', { class: 'legend' },
+          el('span', null, el('i', { style: 'background:var(--accent)' }), 'Loudness'),
+          el('span', null, el('i', { style: 'background:var(--pitch)' }), 'Pitch (semitones from your median)'),
+          el('span', null, el('i', { style: 'background:var(--warn-soft);border:1px solid var(--warn)' }), 'Pause 0.3–2.5 s'),
+          el('span', null, el('i', { style: 'background:var(--bad-soft);border:1px solid var(--bad)' }), 'Pause over 2.5 s')));
+      root.append(card);
+      requestAnimationFrame(() => drawVoice(rec.audio.chart));
+    }
+
+    // Delivery + language rows
+    for (const [grp, title, src] of [['delivery', 'Delivery', rec.audio ? 'Measured from the audio' : 'Add the recording to measure delivery'], ['language', 'Language', rec.text ? 'Measured from the transcript' : 'Add a transcript to measure language']]) {
+      const card = el('div', { class: 'panel' }, el('div', { class: 'section-head' }, el('h2', null, title), el('span', { class: 'src' }, src)));
+      const rows = el('div', { class: 'rows' });
+      for (const m of ms.filter(x => x.group === grp)) {
+        const refM = useRef && useRef.m[m.key];
+        if (!m.available) {
+          const why = m.key === 'sentence' && rec.text && !rec.text.tooShort && !rec.text.punctuated ? 'The transcript has no punctuation, so sentences can’t be measured.'
+            : (m.group === 'language' || m.key === 'fillers') ? 'Needs a transcript.' : 'Needs a recording.';
+          rows.append(el('div', { class: 'row' }, el('div', null, el('div', { class: 'name' }, m.label), el('div', { class: 'val' }, `target ${m.target}`)), el('div', { class: 'bar-col na' }, why), el('div', { class: 'score-n na' }, '—')));
+          continue;
+        }
+        rows.append(el('div', { class: 'row' },
+          el('div', null, el('div', { class: 'name' }, m.label), el('div', { class: 'val' }, el('b', null, m.display), ` · target ${m.target}`)),
+          el('div', { class: 'bar-col' }, scoreBar(m.s, refM ? refM.s : null)),
+          el('div', { class: 'score-n' }, String(m.s)),
+          el('p', { class: 'tip' }, m.advice.ok ? m.advice.ok : m.advice.why, refM ? `  Reference: ${refM.display}.` : '')));
+      }
+      card.append(rows); root.append(card);
+    }
+
+    // Content
+    root.append(contentCard(rec, useRef));
+  }
+
+  function fixesCard(rec, ms) {
+    const card = el('div', { class: 'panel' }, el('div', { class: 'section-head' }, el('h2', null, 'Three changes for your next run'),
+      el('span', { class: 'src' }, rec.content && rec.content.top_fixes ? 'From Claude, using content and delivery' : 'From your lowest delivery and language scores')));
+    let fixes = [];
+    if (rec.content && Array.isArray(rec.content.top_fixes)) fixes = rec.content.top_fixes.slice(0, 3);
+    if (fixes.length < 3) {
+      const local = ms.filter(m => m.available && m.advice && !m.advice.ok).sort((x, y) => x.s - y.s).map(m => m.advice);
+      fixes = fixes.concat(local).slice(0, 3);
+    }
+    if (!fixes.length) { card.append(el('p', { class: 'na' }, 'Every measured area is in range. Add a transcript for content feedback.')); return card; }
+    const wrap = el('div', { class: 'fixes' });
+    fixes.forEach((f, i) => wrap.append(el('div', { class: 'fix' },
+      el('div', { class: 'n' }, String(i + 1).padStart(2, '0')),
+      el('h3', null, String(f.title || '')), el('p', null, String(f.why || '')), f.try ? el('p', { class: 'try' }, String(f.try)) : null)));
+    card.append(wrap);
+    return card;
+  }
+
+  function contentCard(rec, useRef) {
+    const card = el('div', { class: 'panel' }, el('div', { class: 'section-head' }, el('h2', null, 'Content'), el('span', { class: 'src' }, 'Scored by Claude against a five-part rubric')));
+    const st = rec.contentState;
+    if (!rec.text || rec.text.tooShort) { card.append(el('p', { class: 'na' }, 'Paste a transcript to get feedback on structure, clarity and argument.')); return card; }
+    if (st === 'thinking') { card.append(el('div', { class: 'thinking' }, el('span', { class: 'dot' }), 'Claude is reading your transcript. This usually takes 20–60 seconds.')); return card; }
+    if (st === 'unavailable') {
+      const out = el('textarea', { id: 'prompt-copy', rows: '6', readonly: 'readonly', 'aria-label': 'Scoring prompt' });
+      out.hidden = true;
+      const btn = el('button', { id: 'copy-prompt', type: 'button', style: 'align-self:flex-start' }, 'Copy scoring prompt');
+      btn.addEventListener('click', async () => {
+        const p = buildPrompt(rec, true);
+        try { await navigator.clipboard.writeText(p); btn.textContent = 'Copied. Paste it into Claude or ChatGPT.'; }
+        catch { out.value = p; out.hidden = false; out.focus(); out.select(); btn.textContent = 'Copy the prompt below'; }
+      });
+      card.append(el('p', { class: 'na' }, 'Claude isn’t connected in this view, so content can’t be scored here. Copy the scoring prompt, which includes your transcript, delivery numbers and the five-part rubric, then paste it into Claude or ChatGPT for the same feedback.'),
+        el('div', { style: 'display:flex;flex-direction:column;gap:8px;margin-top:10px' }, btn, out));
+      return card;
+    }
+    if (st === 'rate') { card.append(el('p', { class: 'na' }, 'Claude is busy or you have reached a usage limit. Wait a minute, then press Score my talk again.')); return card; }
+    if (st === 'failed' || !rec.content) { card.append(el('p', { class: 'na' }, 'Claude’s answer could not be read. Press Score my talk to try again.')); return card; }
+    const c = rec.content;
+    const rows = el('div', { class: 'rows' });
+    for (const [k, lbl] of CRITERIA) {
+      const item = c.criteria[k]; if (!item) continue;
+      const refS = useRef && useRef.c ? useRef.c[k] : null;
+      rows.append(el('div', { class: 'crit' },
+        el('div', { class: 'line1' }, el('div', { class: 'name', style: 'font-weight:600' }, lbl), scoreBar(item.score, refS != null ? refS : null), el('div', { class: 'score-n' }, String(item.score))),
+        el('p', null, String(item.comment || '')),
+        item.evidence ? el('q', null, String(item.evidence)) : null));
+    }
+    card.append(rows);
+    if (Array.isArray(c.strengths) && c.strengths.length) {
+      card.append(el('h3', { style: 'margin-top:12px' }, 'What already works'), el('ul', { class: 'strengths' }, c.strengths.slice(0, 3).map(s => el('li', null, String(s)))));
+    }
+    return card;
+  }
+
+  function drawVoice(ch) {
+    const cv = $('voice'); if (!cv) return;
+    const css = getComputedStyle(document.documentElement);
+    const col = (n) => css.getPropertyValue(n).trim();
+    const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+    if (!w) return;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+    const L = 34, R = 6, top = 6, mid = 96, bot = h - 22;
+    const X = (t) => L + (w - L - R) * t / ch.spanSec;
+    g.font = `11px ${col('--font-mono') || 'monospace'}`;
+    // pauses
+    for (const p of ch.pauses) {
+      const long = p.d >= 2.5;
+      g.fillStyle = col(long ? '--bad-soft' : '--warn-soft');
+      g.fillRect(X(p.t), top, Math.max(1, X(p.t + p.d) - X(p.t)), bot - top);
+    }
+    // loudness envelope (top band)
+    const n = ch.env.length, bx = (i) => L + (w - L - R) * i / (n - 1), ey = (v) => mid - 6 - v * (mid - 6 - top);
+    g.beginPath(); g.moveTo(bx(0), mid - 6);
+    ch.env.forEach((v, i) => g.lineTo(bx(i), ey(v)));
+    g.lineTo(bx(n - 1), mid - 6); g.closePath();
+    g.fillStyle = col('--accent-soft'); g.fill();
+    g.beginPath(); ch.env.forEach((v, i) => i ? g.lineTo(bx(i), ey(v)) : g.moveTo(bx(i), ey(v)));
+    g.strokeStyle = col('--accent'); g.lineWidth = 1.2; g.stroke();
+    // pitch band
+    const pTop = mid + 4, pBot = bot - 4, py = (st) => pTop + (pBot - pTop) * (1 - (Math.max(-8, Math.min(8, st)) + 8) / 16);
+    g.strokeStyle = col('--line'); g.lineWidth = 1;
+    g.beginPath(); g.moveTo(L, py(0)); g.lineTo(w - R, py(0)); g.stroke();
+    g.fillStyle = col('--pitch');
+    ch.pitch.forEach((v, i) => { if (v !== null && v !== undefined) { g.beginPath(); g.arc(bx(i), py(v), 1.6, 0, Math.PI * 2); g.fill(); } });
+    // labels
+    g.fillStyle = col('--muted'); g.textBaseline = 'middle'; g.textAlign = 'right';
+    g.fillText('loud', L - 6, top + 8); g.fillText('+8', L - 6, py(8)); g.fillText('0', L - 6, py(0)); g.fillText('−8', L - 6, py(-8));
+    g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    const steps = [15, 30, 60, 120, 300, 600], step = steps.find(s => ch.spanSec / s <= 8) || 900;
+    for (let t = 0; t <= ch.spanSec + 0.01; t += step) { g.fillText(fmtTime(t), Math.min(w - R - 14, Math.max(L + 10, X(t))), h - 6); }
+  }
+
+  let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => current && current.audio && drawVoice(current.audio.chart), 120); });
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => current && current.audio && drawVoice(current.audio.chart)); } catch { }
+  new MutationObserver(() => current && current.audio && drawVoice(current.audio.chart)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---------- Example report (shown until the viewer scores their own talk) ----------
+  function exampleChart(spanSec) {
+    let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const pauses = []; let t = 2.2;
+    while (t < spanSec - 2) { const d = rnd() < 0.06 ? 2.7 + rnd() : 0.3 + rnd() * 0.7; pauses.push({ t, d }); t += d + 4 + rnd() * 8; }
+    const env = [], pitch = []; let p = 0;
+    for (let i = 0; i < 600; i++) {
+      const tt = i / 599 * spanSec, inPause = pauses.some(q => tt >= q.t && tt <= q.t + q.d);
+      env.push(inPause ? 0.04 * rnd() : Math.max(0.15, Math.min(1, 0.55 + 0.25 * Math.sin(i / 3.1) + 0.2 * (rnd() - 0.5))));
+      p = Math.max(-5, Math.min(5, p * 0.85 + (rnd() - 0.5) * 2.2));
+      pitch.push(inPause ? null : p);
+    }
+    return { env, pitch, pauses, spanSec };
+  }
+  const exSpan = 248;
+  current = {
+    example: true, aud: 'academic', label: 'Sample: 4-minute conference talk on a rent-assistance pilot',
+    audio: { spanSec: exSpan, pausesPerMin: 7.3, longPauses: 1, pitchSpreadSt: 2.1, pitchRangeSt: 7.4, loudSpreadDb: 6.8, wpmEst: 168, chart: exampleChart(exSpan) },
+    text: { wordCount: 707, wpm: 171, fillersPerMin: 3.4, fillerTop: [['um', 7], ['you know', 4], ['uh', 3]], hedgesPer100: 2.6, avgSentence: 25, longShare: 0.21, punctuated: true },
+    contentState: 'done',
+    content: {
+      main_message: 'A small monthly rent subsidy in three cities cut evictions by about a fifth without raising rents, so it should be scaled.',
+      criteria: {
+        structure: { score: 72, comment: 'Clear sections, but there is no signpost between methods and results, so listeners lose the thread.', evidence: 'okay so then we ran the regressions and' },
+        clarity: { score: 64, comment: 'The main finding arrives in minute three. State it in the first 30 seconds.', evidence: 'what we found, and I will get to this, is' },
+        reasoning: { score: 81, comment: 'Credible design with a real comparison group, and the low take-up is acknowledged.', evidence: 'take-up was only 41 percent, which matters for' },
+        audience_fit: { score: 77, comment: 'Right level for economists; define difference-in-differences once for a mixed panel.', evidence: 'a standard diff-in-diff with city fixed effects' },
+        opening_close: { score: 58, comment: 'Opens with logistics and ends without restating the result or the policy ask.', evidence: 'so yeah, that is it, I guess' }
+      },
+      strengths: ['Research design explained in plain steps', 'Honest about the main limitation'],
+      top_fixes: [
+        { title: 'Lead with your finding', why: 'Listeners decide in the first 30 seconds whether to follow you.', try: 'Open with: “A small monthly rent subsidy cut evictions by a fifth in three cities. Here is how we know.”' },
+        { title: 'Slow down to about 150 wpm', why: 'At 171 words per minute your numbers blur together.', try: 'Pause for one beat after every number you state, and cut one slide of detail to buy the time.' },
+        { title: 'Swap “um” for silence', why: '3.4 fillers a minute make strong results sound tentative.', try: 'Record one minute; each time you hear “um”, restart the sentence after a silent pause.' }
+      ]
+    }
+  };
+  render();
+})();
+</script>
+
+</body>
+</html>
